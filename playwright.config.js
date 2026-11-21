@@ -12,9 +12,11 @@ module.exports = defineConfig({
   fullyParallel: true,
   workers: process.env.CI ? 4 : undefined,
   forbidOnly: !!process.env.CI,
+  maxFailures: process.env.CI ? 10 : undefined,   // stop early if something is badly wrong
+  globalTimeout: process.env.CI ? 8 * 60_000 : undefined,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list'], ['html', { open: 'never' }]],
-  use: { baseURL, trace: 'retain-on-failure', screenshot: 'only-on-failure' },
+  use: { baseURL, navigationTimeout: 20_000, trace: 'retain-on-failure', screenshot: 'only-on-failure' },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
     { name: 'phone', use: { ...devices['Pixel 7'] } },

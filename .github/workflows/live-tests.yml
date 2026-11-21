@@ -35,8 +35,31 @@ jobs:
       - name: Install test tools
         run: npm ci
 
+      - name: Pre-flight check (is the real site reachable from GitHub?)
+        run: |
+          html=$(curl -sS -L --max-time 20 -A "Mozilla/5.0 (X11; Linux x86_64) Chrome/130" https://sanzay.com.np/ || true)
+          if echo "$html" | grep -q "Sanzay Bhandari"; then
+            echo "OK: the live site is reachable"
+          elif echo "$html" | grep -qi "one moment, please"; then
+            echo "::error::The host's firewall (bot challenge) is blocking GitHub's servers. The page says 'One moment, please...' instead of the site."
+            exit 1
+          else
+            echo "::error::The live site did not return the expected page. First 300 characters:"
+            echo "$html" | head -c 300
+            exit 1
+          fi
+
       - name: Run tests against the live site (desktop + phone)
         run: npx playwright test
+        timeout-minutes: 10
+
+      - name: Make sure there is a report page
+        if: always()
+        run: |
+          if [ ! -f playwright-report/index.html ]; then
+            mkdir -p playwright-report
+            echo '<!doctype html><meta charset="utf-8"><title>sanzay.com.np · live site tests</title><body style="font:16px system-ui;max-width:640px;margin:60px auto;padding:0 16px"><h1>No test results for this run</h1><p>The run stopped before the tests finished (for example, the live site was unreachable from GitHub). See the <a href="https://github.com/sanjaygdrrad/sanzay-site-tests/actions">Actions log</a> for details.</p></body>' > playwright-report/index.html
+          fi
 
       - name: Prepare the public report
         if: always()
@@ -46,7 +69,7 @@ jobs:
 
   report:
     name: Publish report
-    if: always() && github.ref == 'refs/heads/main'
+    if: always() && github.ref == 'refs/heads/main' && needs.test.result != 'skipped'
     needs: test
     runs-on: ubuntu-latest
     environment:
