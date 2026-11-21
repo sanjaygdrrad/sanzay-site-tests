@@ -10,11 +10,11 @@ module.exports = defineConfig({
   testDir: 'tests/e2e',
   timeout: 30_000,
   fullyParallel: true,
-  workers: process.env.CI ? 4 : undefined,
+  workers: 1,          // one browser at a time: gentle on the live server and its firewall
   forbidOnly: !!process.env.CI,
   maxFailures: process.env.CI ? 10 : undefined,   // stop early if something is badly wrong
   globalTimeout: process.env.CI ? 8 * 60_000 : undefined,
-  retries: process.env.CI ? 1 : 0,
+  retries: 0,          // no automatic retries (each retry is extra traffic to the live site)
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list'], ['html', { open: 'never' }]],
   use: { baseURL, navigationTimeout: 20_000, trace: 'retain-on-failure', screenshot: 'only-on-failure' },
   projects: [

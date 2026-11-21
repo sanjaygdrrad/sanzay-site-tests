@@ -49,7 +49,7 @@ BASE_URL=http://localhost:4173 npm test
 
 ## How it runs
 - `.github/workflows/live-tests.yml` runs daily at 02:17 UTC (08:02 in Nepal), on every push, and on demand.
-- Tests run inside Playwright's official container image, so there's no browser install and runs take about 1–2 minutes.
+- Tests run inside Playwright's official container image (no browser install), **one at a time and without retries**, to stay gentle on the live server and its firewall. A run takes about 2–3 minutes.
 - The HTML report (screenshots and step-by-step traces for any failure) is published to GitHub Pages.
 
 ---
